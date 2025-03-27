@@ -24,13 +24,14 @@ A modern, feature-rich PDF annotation application built with Next.js, React, and
 
 ## Tech Stack
 
-- **Framework**: Next.js 15
-- **Styling**: Tailwind CSS
-- **UI Components**: Radix UI
-- **Icons**: Lucide Icons
-- **PDF Handling**: react-pdf, @react-pdf/renderer
+- **Framework**: Next.js 15.2.4
+- **Styling**: Tailwind CSS v4
+- **UI Components**: Radix UI (Dialog, Dropdown Menu, Toast, Tooltip)
+- **Icons**: Lucide React v0.484.0
+- **PDF Handling**: react-pdf v9.2.1, @react-pdf/renderer v4.3.0, pdf-lib v1.17.1, react-signature-canvas v1.1.0-alpha.1
 - **State Management**: React Hooks
-- **Type Safety**: TypeScript
+- **Type Safety**: TypeScript v5
+- **React**: v19.0.0
 
 ## Getting Started
 
