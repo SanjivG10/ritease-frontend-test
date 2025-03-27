@@ -83,7 +83,7 @@ export function PDFAnnotator({
         };
         onAnnotationAdd(newAnnotation);
         onAnnotationSelect?.(newAnnotation.id);
-      } else if (tool === "signature") {
+      } else if (tool === "signature" && !showSignaturePad) {
         setPendingSignaturePosition({ x, y });
         setShowSignaturePad(true);
       } else if (tool === "underline" || tool === "highlight") {
@@ -130,7 +130,7 @@ export function PDFAnnotator({
           onAnnotationUpdate(updatedAnnotation);
         }
       } else if (tool === "underline" || tool === "highlight") {
-        const updatedAnnotation = {
+        const updatedAnnotation: Annotation = {
           ...currentAnnotation,
           rect: {
             x: Math.min(currentAnnotation.position.x, x),
@@ -141,6 +141,7 @@ export function PDFAnnotator({
                 ? 2
                 : Math.abs(y - currentAnnotation.position.y),
           },
+          color: currentColor,
         };
         setCurrentAnnotation(updatedAnnotation);
       }
@@ -177,15 +178,22 @@ export function PDFAnnotator({
     onAnnotationUpdate,
     currentColor,
     onAnnotationSelect,
+    showSignaturePad,
   ]);
 
   const handleSignatureSave = (dataUrl: string) => {
     if (!pendingSignaturePosition) return;
+
+    console.log("Saving signature at position:", pendingSignaturePosition); // Debug log
+
     const newAnnotation: Annotation = {
       id: Math.random().toString(36).substring(2, 9),
       type: "signature",
       page: pageNumber,
-      position: pendingSignaturePosition,
+      position: {
+        x: pendingSignaturePosition.x,
+        y: pendingSignaturePosition.y,
+      },
       color: currentColor,
       signatureUrl: dataUrl,
       rect: {
@@ -195,6 +203,8 @@ export function PDFAnnotator({
         height: 100,
       },
     };
+
+    console.log("Created annotation:", newAnnotation); // Debug log
     onAnnotationAdd(newAnnotation);
     setShowSignaturePad(false);
     setPendingSignaturePosition(null);
@@ -203,7 +213,10 @@ export function PDFAnnotator({
   return (
     <div ref={pageRef} className="relative">
       <Page pageNumber={pageNumber} scale={scale} className="pdf-page" />
-      <div className="annotation-layer">
+      <div
+        className="annotation-layer"
+        style={{ transform: `scale(${scale})`, transformOrigin: "top left" }}
+      >
         {annotations
           .filter((annotation) => annotation.page === pageNumber)
           .map((annotation) => (
@@ -214,19 +227,19 @@ export function PDFAnnotator({
               }`}
               onClick={() => onAnnotationSelect?.(annotation.id)}
               style={{
-                left: annotation.rect
-                  ? `${annotation.rect.x}px`
-                  : `${annotation.position.x}px`,
-                top: annotation.rect
-                  ? `${annotation.rect.y}px`
-                  : `${annotation.position.y}px`,
+                position: "absolute",
+                left: `${annotation.position.x}px`,
+                top: `${annotation.position.y}px`,
                 width: annotation.rect
                   ? `${annotation.rect.width}px`
                   : undefined,
                 height: annotation.rect
                   ? `${annotation.rect.height}px`
                   : undefined,
-                backgroundColor: annotation.color,
+                backgroundColor:
+                  annotation.type !== "signature"
+                    ? annotation.color
+                    : undefined,
               }}
             >
               {annotation.type === "comment" && (
@@ -238,7 +251,14 @@ export function PDFAnnotator({
                 <img
                   src={annotation.signatureUrl}
                   alt="Signature"
-                  className="w-full h-full object-contain"
+                  style={{
+                    width: "200px", // Fixed width
+                    height: "100px", // Fixed height
+                    position: "absolute",
+                    top: "0",
+                    left: "0",
+                    pointerEvents: "none", // Prevent interference with other interactions
+                  }}
                 />
               )}
             </div>

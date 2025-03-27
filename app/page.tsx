@@ -117,34 +117,27 @@ export default function Home() {
           case "underline": {
             if (annotation.rect) {
               const { x, y, width, height: rectHeight } = annotation.rect;
+              const color = hexToRgb(annotation.color || "#2196f3");
               page.drawRectangle({
                 x,
                 y: height - y - (rectHeight || 0),
                 width,
                 height: rectHeight || 0,
                 opacity: annotation.type === "highlight" ? 0.3 : 0.7,
+                color: rgb(color.r, color.g, color.b),
               });
             }
             break;
           }
           case "comment": {
             const color = hexToRgb(annotation.color || "#2196f3");
-            if (annotation.position) {
-              page.drawCircle({
+            if (annotation.position && annotation.content) {
+              page.drawText(annotation.content, {
                 x: annotation.position.x,
                 y: height - annotation.position.y,
-                size: 12,
-                color: rgb(color.r, color.g, color.b),
+                size: 10,
+                color: rgb(color.r / 255, color.g / 255, color.b / 255),
               });
-
-              if (annotation.content) {
-                page.drawText(annotation.content, {
-                  x: annotation.position.x + 15,
-                  y: height - annotation.position.y,
-                  size: 10,
-                  color: rgb(0, 0, 0),
-                });
-              }
             }
             break;
           }
@@ -152,10 +145,7 @@ export default function Home() {
             if (annotation.signatureUrl && annotation.rect) {
               try {
                 // Remove the data:image/png;base64, prefix
-                const signatureData = annotation.signatureUrl.replace(
-                  /^data:image\/\w+;base64,/,
-                  ""
-                );
+                const signatureData = annotation.signatureUrl.split(",")[1];
                 const signatureBytes = Uint8Array.from(
                   atob(signatureData),
                   (c) => c.charCodeAt(0)
@@ -167,9 +157,9 @@ export default function Home() {
                 const { height: pageHeight } = page.getSize();
 
                 page.drawImage(signatureImage, {
-                  x: x,
+                  x,
                   y: pageHeight - y - rectHeight,
-                  width: width,
+                  width,
                   height: rectHeight,
                 });
               } catch (error) {

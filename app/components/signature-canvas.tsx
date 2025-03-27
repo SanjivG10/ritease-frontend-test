@@ -44,8 +44,8 @@ export function SignatureCanvas({
             ref={sigPadRef}
             canvasProps={{
               className: "signature-canvas",
-              width: 500,
-              height: 200,
+              width: 160,
+              height: 80,
             }}
             dotSize={2}
             minWidth={1}
